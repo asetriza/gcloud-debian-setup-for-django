@@ -1,6 +1,6 @@
-# Debian Server Set Up for Django Instruction
+# Debian Server Set Up for Django Instruction on Google cloud
 
-In this guide we will set up clean Debian server for Python and Django projects. We will configure secure SSH connection, install from Debian repositories and from sources all needed packages and ware it together for working Debian Django server.
+In this guide we will set up clean Debian server on Google cloud for Python and Django projects. We will configure secure SSH connection, install from Debian repositories and from sources all needed packages and ware it together for working Debian Django server.
 
 [Youtube video guide (in Russian)](https://www.youtube.com/watch?v=FLiKTJqyyvs)
 
@@ -8,7 +8,16 @@ In this guide we will set up clean Debian server for Python and Django projects.
 
 Connect through SSH to remote Debian server and update repositories and install some initial needed packages:
 
+First connection:
+
 ```
+add your id_rsa.pub key into VM ssh key settings, take your username:
+ssh -i path-to-private-key username@external-ip
+ssh username@external-ip
+```
+
+```
+sudo passwd <username>
 sudo apt-get update ; \
 sudo apt-get install -y vim mosh tmux htop git curl wget unzip zip gcc build-essential make
 ```
@@ -17,16 +26,57 @@ Configure SSH:
 
 ```
 sudo vim /etc/ssh/sshd_config
-    AllowUsers www
+    AllowUsers <username>
     PermitRootLogin no
     PasswordAuthentication no
+```
+
+SSH Language:
+
+```
+sudo localedef en_US.UTF-8 -i en_US -fUTF-8 ; \
+export LANGUAGE=en_US.UTF-8 ; \
+export LANG=en_US.UTF-8 ; \
+export LC_ALL=en_US.UTF-8 ; \
+sudo locale-gen en_US.UTF-8 ; \
+sudo dpkg-reconfigure locales
+
+cat ~/.bashrc server
+sudo vim ~/.bashrc server
+cat ~/.bash_profile
+sudo vim ~/.bash_profile
+In ~/.bash_profile, ~/.bashrc server:
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+```
+
+Add locales to `/etc/profile`:
+
+```
+sudo vim /etc/profile
+    export LANGUAGE=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+```
+
+Google cloud firewall mosh-fw
+
+```
+	Направление
+	Входящий трафик
+	Протоколы и порты
+	udp
+	Диапазоны IP-адресов 
+	0.0.0.0/0
+	Применить 
+	для всех
 ```
 
 Restart SSH server, change `www` user password:
 
 ```
 sudo service ssh restart
-sudo passwd www
 ```
 
 ## Init — must-have packages & ZSH
@@ -39,6 +89,7 @@ Install [oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
 ```
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+chsh -s $(which zsh)
 ```
 
 Configure some needed aliases:
@@ -48,36 +99,39 @@ vim ~/.zshrc
     alias cls="clear"
 ```
 
-## Install python 3.7
+## Install python 3.*
 
-mkdir ~/code
+mkdir ~/Dev
 
-Build from source python 3.7, install with prefix to ~/.python folder:
+Build from source python 3.*, install with prefix to ~/.python folder:
 
 ```
-wget https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tgz ; \
-tar xvf Python-3.7.* ; \
-cd Python-3.7.3 ; \
+mkdir ~/.python
+cd ~/.python
+wget https://www.python.org/ftp/python/3.*.*/Python-3.*.*.tgz ; \
+tar xvf Python-3.*.* ; \
+cd Python-3.*.* ; \
 mkdir ~/.python ; \
 ./configure --enable-optimizations --prefix=/home/www/.python ; \
 make -j8 ; \
 sudo make altinstall
 ```
 
-Now python3.7 in `/home/www/.python/bin/python3.7`. Update pip:
+Now python3.* in `/home/www/.python/bin/python3.*`. Update pip:
 
 ```
-sudo /home/www/.python/bin/python3.7 -m pip install -U pip
+sudo /home/www/.python/bin/python3.* -m pip install -U pip
+sudo /home/www/.python/bin/python3.* -m pip install virtualenv
 ```
 
 Ok, now we can pull our project from Git repository (or create own), create and activate Python virtual environment:
 
 ```
-cd code
+cd Dev
 git pull project_git
 cd project_dir
-python3.7 -m venv env
-. ./env/bin/activate
+python3.* -m virtualvenv venv_<projectname>
+. ./venv_<projectname>/bin/activate
 ```
 
 ## Install and configure PostgreSQL
