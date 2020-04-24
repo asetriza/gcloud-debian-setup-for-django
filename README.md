@@ -63,14 +63,14 @@ sudo vim /etc/profile
 Google cloud firewall mosh-fw
 
 ```
-	Направление
+	Направление:
 	Входящий трафик
-	Протоколы и порты
+	Протоколы и порты:
 	udp
-	Диапазоны IP-адресов 
+	Диапазоны IP-адресов: 
 	0.0.0.0/0
-	Применить 
-	для всех
+	Применить:
+	для всех/по тегу
 ```
 
 Restart SSH server, change `www` user password:
